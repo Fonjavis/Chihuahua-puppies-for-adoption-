@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Puppy Adoption Shop</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f7f3e9; margin: 0; padding: 0; }
+  header { text-align: center; color: gold; font-size: 3em; margin: 20px 0; }
+  .login-panel, .admin-panel, .puppy-gallery, .message-panel { max-width: 600px; margin: 20px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  input, textarea { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+  button { background: gold; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+  .puppy-card { text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
+  .puppy-card img { width: 100%; border-radius: 10px; }
+</style>
+</head>
+<body>
+
+<header>Puppy Adoption Shop</header>
+
+<div class="login-panel" id="loginPanel">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="login()">Login</button>
+</div>
+
+<div class="admin-panel" id="adminPanel" style="display:none;">
+  <h2>Admin Panel</h2>
+  <input type="text" id="puppyName" placeholder="Puppy Name">
+  <input type="text" id="puppyAge" placeholder="Age">
+  <input type="text" id="puppyPersonality" placeholder="Personality">
+  <input type="text" id="puppyPrice" placeholder="Price">
+  <input type="text" id="puppyImg" placeholder="Image URL">
+  <button onclick="addPuppy()">Add Puppy</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<div class="puppy-gallery" id="puppyGallery"></div>
+
+<div class="message-panel" id="messagePanel" style="display:none;">
+  <h2>Messages</h2>
+  <textarea id="messageText" placeholder="Type a message about a puppy"></textarea>
+  <button onclick="sendMessage()">Send Message</button>
+  <div id="messageList"></div>
+</div>
+
+<script>
+// Sample admin credentials
+const adminUser = {username:'admin', password:'admin123'};
+
+// Load data from localStorage
+let puppies = JSON.parse(localStorage.getItem('puppies')) || [];
+let messages = JSON.parse(localStorage.getItem('messages')) || [];
+
+// Display puppies
+function displayPuppies() {
+  const gallery = document.getElementById('puppyGallery');
+  gallery.innerHTML = '';
+  puppies.forEach((puppy, index) => {
+    gallery.innerHTML += `
+      <div class="puppy-card">
+        <img src="${puppy.img}" alt="${puppy.name}">
+        <h3>${puppy.name}</h3>
+        <p>Age: ${puppy.age}</p>
+        <p>Personality: ${puppy.personality}</p>
+        <p>Price: ${puppy.price}</p>
+        ${document.getElementById('adminPanel').style.display==='block' ? `<button onclick="editPuppy(${index})">Edit</button>` : ''}
+      </div>
+    `;
+  });
+}
+
+// Add puppy (admin)
+function addPuppy() {
+  const name = document.getElementById('puppyName').value;
+  const age = document.getElementById('puppyAge').value;
+  const personality = document.getElementById('puppyPersonality').value;
+  const price = document.getElementById('puppyPrice').value;
+  const img = document.getElementById('puppyImg').value;
+  if(name && age && personality && price && img) {
+    puppies.push({name, age, personality, price, img});
+    localStorage.setItem('puppies', JSON.stringify(puppies));
+    displayPuppies();
+    document.getElementById('puppyName').value='';
+    document.getElementById('puppyAge').value='';
+    document.getElementById('puppyPersonality').value='';
+    document.getElementById('puppyPrice').value='';
+    document.getElementById('puppyImg').value='';
+  } else { alert('Fill all fields!'); }
+}
+
+// Edit puppy
+function editPuppy(index) {
+  const name = prompt('Enter new name:', puppies[index].name);
+  if(name) { puppies[index].name = name; localStorage.setItem('puppies', JSON.stringify(puppies)); displayPuppies(); }
+}
+
+// Login function
+function login() {
+  const username = document.getElementById('username').value;
+  const password = document.getElementById('password').value;
+  if(username===adminUser.username && password===adminUser.password){
+    document.getElementById('loginPanel').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    document.getElementById('messagePanel').style.display='block';
+    displayPuppies();
+    displayMessages();
+  } else {
+    alert('Invalid credentials!');
+  }
+}
+
+// Logout
+function logout() {
+  document.getElementById('loginPanel').style.display='block';
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('messagePanel').style.display='none';
+}
+
+// Messaging
+function sendMessage() {
+  const msg = document.getElementById('messageText').value;
+  if(msg) {
+    messages.push({text: msg, time: new Date().toLocaleString()});
+    localStorage.setItem('messages', JSON.stringify(messages));
+    document.getElementById('messageText').value='';
+    displayMessages();
+  } else alert('Enter a message!');
+}
+
+function displayMessages() {
+  const list = document.getElementById('messageList');
+  list.innerHTML = '';
+  messages.forEach(m => { list.innerHTML += `<p>[${m.time}] ${m.text}</p>`; });
+}
+
+// Initial display
+displayPuppies();
+displayMessages();
+</script>
+
+</body>
+</html>
